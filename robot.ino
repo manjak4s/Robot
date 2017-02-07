@@ -6,7 +6,17 @@ int pinA2 = 13;
 //Motor B pins (enabledB = enable motor, pinB2 = forward, pinB2 = backward)
 int enableB = 10;
 int pinB1 = 9;
-int pinB2 = 3;
+int pinB2 = 8;
+
+//Motor C pins (enabledB = enable motor, pinB2 = forward, pinB2 = backward)
+int enableC = 5;
+int pinC1 = 4;
+int pinC2 = 3;
+
+//Motor D pins (enabledB = enable motor, pinB2 = forward, pinB2 = backward)
+int enableD = 6;
+int pinD1 = 2;
+int pinD2 = 7;
 
 //This lets you run the loop a single time for testing
 boolean run = true;
@@ -19,6 +29,14 @@ void setup() {
  pinMode(enableB, OUTPUT);
  pinMode(pinB1, OUTPUT);
  pinMode(pinB2, OUTPUT);
+ 
+ pinMode(enableC, OUTPUT);
+ pinMode(pinC1, OUTPUT);
+ pinMode(pinC2, OUTPUT);
+ 
+ pinMode(enableD, OUTPUT);
+ pinMode(pinD1, OUTPUT);
+ pinMode(pinD2, OUTPUT);
 }
 void loop() {
   // эта функция обеспечит вращение двигателей в двух направлениях на установленной скорости
@@ -31,7 +49,7 @@ digitalWrite(pinA2, LOW);
 
 // устанавливаем скорость 200 из доступного диапазона 0~255
 
-analogWrite(enableA, 200);
+analogWrite(enableA, 255);
 
 // запуск двигателя B
 
@@ -41,7 +59,29 @@ digitalWrite(pinB2, LOW);
 
 // устанавливаем скорость 200 из доступного диапазона 0~255
 
-analogWrite(enableB, 200);
+analogWrite(enableB, 255);
+
+// запуск двигателя C
+
+digitalWrite(pinC1, LOW);
+
+digitalWrite(pinC2, HIGH);
+
+// устанавливаем скорость 200 из доступного диапазона 0~255
+
+analogWrite(enableC, 255);
+
+
+// запуск двигателя D
+
+digitalWrite(pinD1, HIGH);
+
+digitalWrite(pinD2, LOW);
+
+// устанавливаем скорость 200 из доступного диапазона 0~255
+
+analogWrite(enableD, 255);
+
 
 delay(2000);
 
@@ -55,6 +95,14 @@ digitalWrite(pinB1, LOW);
 
 digitalWrite(pinB2, HIGH);
 
+digitalWrite(pinC1, HIGH);
+
+digitalWrite(pinC2, LOW);
+
+digitalWrite(pinD1, LOW);
+
+digitalWrite(pinD2, HIGH);
+
 delay(2000);
 
 // выключаем двигатели
@@ -66,6 +114,16 @@ digitalWrite(pinA2, LOW);
 digitalWrite(pinB1, LOW);
 
 digitalWrite(pinB2, LOW);
+
+digitalWrite(pinC1, LOW);
+
+digitalWrite(pinC2, LOW);
+
+digitalWrite(pinD1, LOW);
+
+digitalWrite(pinD2, LOW);
+
+delay(2000);
 }
 
 //Define high-level H-bridge commands
