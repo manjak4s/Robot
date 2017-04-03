@@ -1,3 +1,13 @@
+#include <SoftwareSerial.h>
+
+//Software Rx Tx for receiving commands
+SoftwareSerial softSerial(2, 3);
+
+char const* commands[] = { "f", "b", "l", "r", "s" };
+enum { FORWARD, BACKWARD, LEFT, RIGHT, STOP };
+
+int commandDuration = 0;
+
 // Motor A pins (enableA = enable motor, pinA1 = forward, pinA2 = backward)
 int enableA = 11;
 int pinA1 = 12;
@@ -9,19 +19,22 @@ int pinB1 = 9;
 int pinB2 = 8;
 
 //Motor C pins (enabledB = enable motor, pinB2 = forward, pinB2 = backward)
-int enableC = 5;
-int pinC1 = 4;
-int pinC2 = 3;
+//int enableC = 5;
+int pinC1 = 6;
+int pinC2 = 5;
 
 //Motor D pins (enabledB = enable motor, pinB2 = forward, pinB2 = backward)
-int enableD = 6;
-int pinD1 = 2;
+//int enableD = 6;
+int pinD1 = 4;
 int pinD2 = 7;
 
 //This lets you run the loop a single time for testing
 boolean run = true;
 
 void setup() {
+  Serial.begin(115200);
+  softSerial.begin(115200);
+  
  pinMode(enableA, OUTPUT);
  pinMode(pinA1, OUTPUT);
  pinMode(pinA2, OUTPUT);
@@ -30,100 +43,45 @@ void setup() {
  pinMode(pinB1, OUTPUT);
  pinMode(pinB2, OUTPUT);
  
- pinMode(enableC, OUTPUT);
+// pinMode(enableC, OUTPUT);
  pinMode(pinC1, OUTPUT);
  pinMode(pinC2, OUTPUT);
  
- pinMode(enableD, OUTPUT);
+ //pinMode(enableD, OUTPUT);
  pinMode(pinD1, OUTPUT);
  pinMode(pinD2, OUTPUT);
 }
 void loop() {
-  // эта функция обеспечит вращение двигателей в двух направлениях на установленной скорости
+  enableMotors();
+  if(softSerial.available() > 0) {
+     String msg = softSerial.readStringUntil('\n');
+     Serial.print("received message: ");
+     Serial.println(msg);
+     handleCommand(msg);
+  }
+}
 
-// запуск двигателя A
-
-digitalWrite(pinA1, HIGH);
-
-digitalWrite(pinA2, LOW);
-
-// устанавливаем скорость 200 из доступного диапазона 0~255
-
-analogWrite(enableA, 255);
-
-// запуск двигателя B
-
-digitalWrite(pinB1, HIGH);
-
-digitalWrite(pinB2, LOW);
-
-// устанавливаем скорость 200 из доступного диапазона 0~255
-
-analogWrite(enableB, 255);
-
-// запуск двигателя C
-
-digitalWrite(pinC1, LOW);
-
-digitalWrite(pinC2, HIGH);
-
-// устанавливаем скорость 200 из доступного диапазона 0~255
-
-analogWrite(enableC, 255);
-
-
-// запуск двигателя D
-
-digitalWrite(pinD1, HIGH);
-
-digitalWrite(pinD2, LOW);
-
-// устанавливаем скорость 200 из доступного диапазона 0~255
-
-analogWrite(enableD, 255);
-
-
-delay(2000);
-
-// меняем направление вращения двигателей
-
-digitalWrite(pinA1, LOW);
-
-digitalWrite(pinA2, HIGH);
-
-digitalWrite(pinB1, LOW);
-
-digitalWrite(pinB2, HIGH);
-
-digitalWrite(pinC1, HIGH);
-
-digitalWrite(pinC2, LOW);
-
-digitalWrite(pinD1, LOW);
-
-digitalWrite(pinD2, HIGH);
-
-delay(2000);
-
-// выключаем двигатели
-
-digitalWrite(pinA1, LOW);
-
-digitalWrite(pinA2, LOW);
-
-digitalWrite(pinB1, LOW);
-
-digitalWrite(pinB2, LOW);
-
-digitalWrite(pinC1, LOW);
-
-digitalWrite(pinC2, LOW);
-
-digitalWrite(pinD1, LOW);
-
-digitalWrite(pinD2, LOW);
-
-delay(2000);
+void handleCommand(String command) {
+    if(command == commands[FORWARD]) {
+        Serial.println("forward");
+        forward(commandDuration);
+     }
+     else if(command == commands[BACKWARD]) {
+        Serial.println("backward");
+        backward(commandDuration);
+     }
+     else if(command == commands[LEFT]) {
+        Serial.println("left");
+        turnLeft(commandDuration);
+     }
+     else if(command == commands[RIGHT]) {
+        Serial.println("right");
+        turnRight(commandDuration);
+     }
+     else {
+        Serial.println("break");
+        coast(0);
+     }
 }
 
 //Define high-level H-bridge commands
