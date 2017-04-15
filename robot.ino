@@ -1,215 +1,134 @@
 #include <SoftwareSerial.h>
+#include "Motor.h"
 
 //Software Rx Tx for receiving commands
-SoftwareSerial softSerial(2, 3);
+SoftwareSerial softSerial(2, 4);
 
 char const* commands[] = { "f", "b", "l", "r", "s" };
 enum { FORWARD, BACKWARD, LEFT, RIGHT, STOP };
 
-int commandDuration = 0;
+enum MotorPin { 
+    FL_MOTOR = 11, //front left
+    FR_MOTOR = 6, //front right
+    RL_MOTOR = 9, //rear left
+    RR_MOTOR = 10 //rear right
+};
 
-// Motor A pins (enableA = enable motor, pinA1 = forward, pinA2 = backward)
-int enableA = 11;
-int pinA1 = 12;
-int pinA2 = 13;
+enum DirectionPin { 
+    LEFT_FWD = 8, 
+    LEFT_BWD = 7, 
+    RIGHT_FWD = 13, 
+    RIGHT_BWD = 12 
+};
 
-//Motor B pins (enabledB = enable motor, pinB2 = forward, pinB2 = backward)
-int enableB = 10;
-int pinB1 = 9;
-int pinB2 = 8;
+//Default MOTORs' speed values
+enum DefaultSpeed {
+    FL_MOTOR_FWD_SPEED = 218,
+    FL_MOTOR_BWD_SPEED = 164,
+    FR_MOTOR_FWD_SPEED = 228,
+    FR_MOTOR_BWD_SPEED = 170,
+    RL_MOTOR_FWD_SPEED = 255,
+    RL_MOTOR_BWD_SPEED = 255,
+    RR_MOTOR_FWD_SPEED = 185,
+    RR_MOTOR_BWD_SPEED = 135
+};
 
-//Motor C pins (enabledB = enable motor, pinB2 = forward, pinB2 = backward)
-//int enableC = 5;
-int pinC1 = 6;
-int pinC2 = 5;
-
-//Motor D pins (enabledB = enable motor, pinB2 = forward, pinB2 = backward)
-//int enableD = 6;
-int pinD1 = 4;
-int pinD2 = 7;
+Motor flMotor(FL_MOTOR, LEFT_FWD, LEFT_BWD);
+Motor frMotor(FR_MOTOR, RIGHT_FWD, RIGHT_BWD);
+Motor rlMotor(RL_MOTOR, LEFT_FWD, LEFT_BWD);
+Motor rrMotor(RR_MOTOR, RIGHT_FWD, RIGHT_BWD);
 
 //This lets you run the loop a single time for testing
 boolean run = true;
 
-void setup() {
-  Serial.begin(115200);
-  softSerial.begin(115200);
-  
- pinMode(enableA, OUTPUT);
- pinMode(pinA1, OUTPUT);
- pinMode(pinA2, OUTPUT);
- 
- pinMode(enableB, OUTPUT);
- pinMode(pinB1, OUTPUT);
- pinMode(pinB2, OUTPUT);
- 
-// pinMode(enableC, OUTPUT);
- pinMode(pinC1, OUTPUT);
- pinMode(pinC2, OUTPUT);
- 
- //pinMode(enableD, OUTPUT);
- pinMode(pinD1, OUTPUT);
- pinMode(pinD2, OUTPUT);
+void setup() 
+{
+    Serial.begin(115200);
+    softSerial.begin(115200);
+
+    flMotor.setForwardSpeed(FL_MOTOR_FWD_SPEED);
+    flMotor.setBackwardSpeed(FL_MOTOR_BWD_SPEED);
+
+    frMotor.setForwardSpeed(FR_MOTOR_FWD_SPEED);
+    frMotor.setBackwardSpeed(FR_MOTOR_BWD_SPEED);
+
+    rlMotor.setForwardSpeed(RL_MOTOR_FWD_SPEED);
+    rlMotor.setBackwardSpeed(RL_MOTOR_BWD_SPEED);
+
+    rrMotor.setForwardSpeed(RR_MOTOR_FWD_SPEED);
+    rrMotor.setBackwardSpeed(RR_MOTOR_BWD_SPEED);
 }
-void loop() {
-  enableMotors();
-  if(softSerial.available() > 0) {
-     String msg = softSerial.readStringUntil('\n');
-     Serial.print("received message: ");
-     Serial.println(msg);
-     handleCommand(msg);
-  }
+
+void stop() 
+{
+    flMotor.stop();
+    frMotor.stop();
+    rlMotor.stop();
+    rrMotor.stop();
+}
+
+void moveForward() 
+{
+    flMotor.moveForward();
+    frMotor.moveForward();
+    rlMotor.moveForward();
+    rrMotor.moveForward();
+}
+
+void moveBackward()
+{
+    flMotor.moveBackward();
+    frMotor.moveBackward();
+    rlMotor.moveBackward();
+    rrMotor.moveBackward();
+}
+
+void turnLeft() 
+{
+    flMotor.moveBackward();
+    frMotor.moveForward();
+    rlMotor.moveBackward();
+    rrMotor.moveForward();
+}
+
+void turnRight() 
+{
+    flMotor.moveForward();
+    frMotor.moveBackward();
+    rlMotor.moveForward();
+    rrMotor.moveBackward();
 }
 
 void handleCommand(String command) {
-    if(command == commands[FORWARD]) {
-        Serial.println("forward");
-        forward(commandDuration);
-     }
-     else if(command == commands[BACKWARD]) {
-        Serial.println("backward");
-        backward(commandDuration);
-     }
-     else if(command == commands[LEFT]) {
-        Serial.println("left");
-        turnLeft(commandDuration);
-     }
-     else if(command == commands[RIGHT]) {
-        Serial.println("right");
-        turnRight(commandDuration);
-     }
-     else {
-        Serial.println("break");
-        coast(0);
-     }
+   if(command == commands[FORWARD]) {
+       Serial.println("forward");
+       moveForward();
+    }
+    else if(command == commands[BACKWARD]) {
+       Serial.println("backward");
+       moveBackward();
+    }
+    else if(command == commands[LEFT]) {
+       Serial.println("left");
+       turnLeft();
+    }
+    else if(command == commands[RIGHT]) {
+       Serial.println("right");
+       turnRight();
+    }
+    else {
+       Serial.println("break");
+       stop();
+    }
 }
 
-//Define high-level H-bridge commands
- 
-void enableMotors()
+void loop() 
 {
- motorAOn();
- motorBOn();
-}
- 
-void disableMotors()
-{
- motorAOff();
- motorBOff();
-}
- 
-void forward(int time)
-{
- motorAForward();
- motorBForward();
- delay(time);
-}
- 
-void backward(int time)
-{
- motorABackward();
- motorBBackward();
- delay(time);
-}
- 
-void turnLeft(int time)
-{
- motorABackward();
- motorBForward();
- delay(time);
-}
- 
-void turnRight(int time)
-{
- motorAForward();
- motorBBackward();
- delay(time);
-}
- 
-void coast(int time)
-{
- motorACoast();
- motorBCoast();
- delay(time);
-}
- 
-void brake(int time)
-{
- motorABrake();
- motorBBrake();
- delay(time);
-}
-//Define low-level H-bridge commands
- 
-//enable motors
-void motorAOn()
-{
- digitalWrite(enableA, HIGH);
-}
- 
-void motorBOn()
-{
- digitalWrite(enableB, HIGH);
-}
- 
- //disable motors
-void motorAOff()
-{
- digitalWrite(enableB, LOW);
-}
- 
-void motorBOff()
-{
- digitalWrite(enableA, LOW);
-}
- 
- //motor A controls
-void motorAForward()
-{
- digitalWrite(pinA1, HIGH);
- digitalWrite(pinA2, LOW);
-}
- 
-void motorABackward()
-{
- digitalWrite(pinA1, LOW);
- digitalWrite(pinA2, HIGH);
-}
- 
-//motor B controls
-void motorBForward()
-{
- digitalWrite(pinB1, HIGH);
- digitalWrite(pinB2, LOW);
-}
- 
-void motorBBackward()
-{
- digitalWrite(pinB1, LOW);
- digitalWrite(pinB2, HIGH);
-}
- 
-//coasting and braking
-void motorACoast()
-{
- digitalWrite(pinA1, LOW);
- digitalWrite(pinA2, LOW);
-}
- 
-void motorABrake()
-{
- digitalWrite(pinA1, HIGH);
- digitalWrite(pinA2, HIGH);
-}
- 
-void motorBCoast()
-{
- digitalWrite(pinB1, LOW);
- digitalWrite(pinB2, LOW);
-}
- 
-void motorBBrake()
-{
- digitalWrite(pinB1, HIGH);
- digitalWrite(pinB2, HIGH);
+    if(softSerial.available() > 0) 
+    {
+        String msg = softSerial.readStringUntil('\n');
+        Serial.print("received message: ");
+        Serial.println(msg);
+        handleCommand(msg);
+    }
 }
