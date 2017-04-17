@@ -1,11 +1,12 @@
 #include <SoftwareSerial.h>
+#include <ArduinoJson.h>
 #include "Motor.h"
 
 //Software Rx Tx for receiving commands
 SoftwareSerial softSerial(2, 4);
 
-char const* commands[] = { "f", "b", "l", "r", "s" };
-enum { FORWARD, BACKWARD, LEFT, RIGHT, STOP };
+char const* commands[] = { "f", "b", "l", "r", "s", "gs" };
+enum { FORWARD, BACKWARD, LEFT, RIGHT, STOP, GET_SETTINGS };
 
 enum MotorPin { 
     FL_MOTOR = 11, //front left
@@ -99,24 +100,45 @@ void turnRight()
     rrMotor.moveBackward();
 }
 
-void handleCommand(String command) {
-   if(command == commands[FORWARD]) {
-       Serial.println("forward");
-       moveForward();
+void getSettings()
+{
+    StaticJsonBuffer<200> jsonBuffer;
+    JsonObject& root = jsonBuffer.createObject();
+    root["fl_fwd"] = flMotor.getForwardSpeed();
+    root["fl_bwd"] = flMotor.getBackwardSpeed();
+    root["fr_fwd"] = frMotor.getForwardSpeed();
+    root["fr_bwd"] = frMotor.getBackwardSpeed();
+    root["rl_fwd"] = rlMotor.getForwardSpeed();
+    root["rl_bwd"] = rlMotor.getBackwardSpeed();
+    root["rr_fwd"] = rrMotor.getForwardSpeed();
+    root["rr_bwd"] = rrMotor.getBackwardSpeed();
+    root.printTo(softSerial);
+}
+
+void handleCommand(String command) 
+{
+   if(command == commands[FORWARD]) 
+   {
+        moveForward();
     }
-    else if(command == commands[BACKWARD]) {
-       Serial.println("backward");
-       moveBackward();
+    else if(command == commands[BACKWARD]) 
+    {
+        moveBackward();
     }
-    else if(command == commands[LEFT]) {
-       Serial.println("left");
-       turnLeft();
+    else if(command == commands[LEFT]) 
+    {
+        turnLeft();
     }
-    else if(command == commands[RIGHT]) {
-       Serial.println("right");
-       turnRight();
+    else if(command == commands[RIGHT]) 
+    {
+        turnRight();
     }
-    else {
+    else if(command == commands[GET_SETTINGS])
+    {
+        getSettings();       
+    }
+    else 
+    {
        Serial.println("break");
        stop();
     }

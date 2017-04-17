@@ -28,6 +28,11 @@ void Motor::setForwardSpeed(int sp)
 	}
 }
 
+int Motor::getForwardSpeed()
+{
+  return _fwdSpeed;
+}
+
 void Motor::setBackwardSpeed(int sp) 
 {
 	_bwdSpeed = sp;
@@ -36,6 +41,11 @@ void Motor::setBackwardSpeed(int sp)
 		_currentSpeed = _state;
 		updateSpeed();
 	}
+}
+
+int Motor::getBackwardSpeed()
+{
+  return _bwdSpeed;
 }
 
 void Motor::moveForward()
