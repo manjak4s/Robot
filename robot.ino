@@ -5,8 +5,8 @@
 //Software Rx Tx for receiving commands
 SoftwareSerial softSerial(2, 4);
 
-char const* commands[] = { "f", "b", "l", "r", "s", "gs" };
-enum { FORWARD, BACKWARD, LEFT, RIGHT, STOP, GET_SETTINGS };
+char const* commands[] = { "f", "b", "l", "r", "s", "gs", "ss:", "rs" };
+enum { FORWARD, BACKWARD, LEFT, RIGHT, STOP, GET_SETTINGS, SET_SETTINGS, RESET_SETTINGS };
 
 enum MotorPin { 
     FL_MOTOR = 11, //front left
@@ -38,27 +38,6 @@ Motor flMotor(FL_MOTOR, LEFT_FWD, LEFT_BWD);
 Motor frMotor(FR_MOTOR, RIGHT_FWD, RIGHT_BWD);
 Motor rlMotor(RL_MOTOR, LEFT_FWD, LEFT_BWD);
 Motor rrMotor(RR_MOTOR, RIGHT_FWD, RIGHT_BWD);
-
-//This lets you run the loop a single time for testing
-boolean run = true;
-
-void setup() 
-{
-    Serial.begin(115200);
-    softSerial.begin(115200);
-
-    flMotor.setForwardSpeed(FL_MOTOR_FWD_SPEED);
-    flMotor.setBackwardSpeed(FL_MOTOR_BWD_SPEED);
-
-    frMotor.setForwardSpeed(FR_MOTOR_FWD_SPEED);
-    frMotor.setBackwardSpeed(FR_MOTOR_BWD_SPEED);
-
-    rlMotor.setForwardSpeed(RL_MOTOR_FWD_SPEED);
-    rlMotor.setBackwardSpeed(RL_MOTOR_BWD_SPEED);
-
-    rrMotor.setForwardSpeed(RR_MOTOR_FWD_SPEED);
-    rrMotor.setBackwardSpeed(RR_MOTOR_BWD_SPEED);
-}
 
 void stop() 
 {
@@ -115,6 +94,50 @@ void getSettings()
     root.printTo(softSerial);
 }
 
+void setSettings(String settingsJson)
+{
+    StaticJsonBuffer<200> jsonBuffer;
+    JsonObject& root = jsonBuffer.parseObject(settingsJson);
+
+    if (!root.success()) 
+    {
+        softSerial.print("400\n");
+        return;   
+    }
+
+    flMotor.setForwardSpeed(root["fl_fwd"]);
+    flMotor.setBackwardSpeed(root["fl_bwd"]);
+    frMotor.setForwardSpeed(root["fr_fwd"]);
+    frMotor.setBackwardSpeed(root["fr_bwd"]);
+    rlMotor.setForwardSpeed(root["rl_fwd"]);
+    rlMotor.setBackwardSpeed(root["rl_bwd"]);
+    rrMotor.setForwardSpeed(root["rr_fwd"]);
+    rrMotor.setBackwardSpeed(root["rr_bwd"]);
+    
+    softSerial.print("200\n");
+}
+
+void resetSpeed()
+{
+    flMotor.setForwardSpeed(FL_MOTOR_FWD_SPEED);
+    flMotor.setBackwardSpeed(FL_MOTOR_BWD_SPEED);
+
+    frMotor.setForwardSpeed(FR_MOTOR_FWD_SPEED);
+    frMotor.setBackwardSpeed(FR_MOTOR_BWD_SPEED);
+
+    rlMotor.setForwardSpeed(RL_MOTOR_FWD_SPEED);
+    rlMotor.setBackwardSpeed(RL_MOTOR_BWD_SPEED);
+
+    rrMotor.setForwardSpeed(RR_MOTOR_FWD_SPEED);
+    rrMotor.setBackwardSpeed(RR_MOTOR_BWD_SPEED);
+}
+
+void resetSettings()
+{
+    resetSpeed();
+    softSerial.print("200\n");
+}
+
 void handleCommand(String command) 
 {
    if(command == commands[FORWARD]) 
@@ -137,9 +160,16 @@ void handleCommand(String command)
     {
         getSettings();       
     }
+    else if(command.startsWith(commands[SET_SETTINGS]))
+    {
+        setSettings(command.substring(3));
+    }
+    else if(command == commands[RESET_SETTINGS])
+    {
+        resetSettings();
+    }
     else 
     {
-       Serial.println("break");
        stop();
     }
 }
@@ -154,3 +184,12 @@ void loop()
         handleCommand(msg);
     }
 }
+
+void setup() 
+{
+    Serial.begin(9600);
+    softSerial.begin(9600);
+
+    resetSpeed();
+}
+
