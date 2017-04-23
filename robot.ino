@@ -22,18 +22,6 @@ enum DirectionPin {
     RIGHT_BWD = 12 
 };
 
-//Default MOTORs' speed values
-enum DefaultSpeed {
-    FL_MOTOR_FWD_SPEED = 218,
-    FL_MOTOR_BWD_SPEED = 164,
-    FR_MOTOR_FWD_SPEED = 228,
-    FR_MOTOR_BWD_SPEED = 170,
-    RL_MOTOR_FWD_SPEED = 255,
-    RL_MOTOR_BWD_SPEED = 255,
-    RR_MOTOR_FWD_SPEED = 185,
-    RR_MOTOR_BWD_SPEED = 135
-};
-
 Motor flMotor(FL_MOTOR, LEFT_FWD, LEFT_BWD);
 Motor frMotor(FR_MOTOR, RIGHT_FWD, RIGHT_BWD);
 Motor rlMotor(RL_MOTOR, LEFT_FWD, LEFT_BWD);
@@ -119,17 +107,17 @@ void setSettings(String settingsJson)
 
 void resetSpeed()
 {
-    flMotor.setForwardSpeed(FL_MOTOR_FWD_SPEED);
-    flMotor.setBackwardSpeed(FL_MOTOR_BWD_SPEED);
+    flMotor.setForwardSpeed(255);
+    flMotor.setBackwardSpeed(255);
 
-    frMotor.setForwardSpeed(FR_MOTOR_FWD_SPEED);
-    frMotor.setBackwardSpeed(FR_MOTOR_BWD_SPEED);
+    frMotor.setForwardSpeed(255);
+    frMotor.setBackwardSpeed(255);
 
-    rlMotor.setForwardSpeed(RL_MOTOR_FWD_SPEED);
-    rlMotor.setBackwardSpeed(RL_MOTOR_BWD_SPEED);
+    rlMotor.setForwardSpeed(255);
+    rlMotor.setBackwardSpeed(255);
 
-    rrMotor.setForwardSpeed(RR_MOTOR_FWD_SPEED);
-    rrMotor.setBackwardSpeed(RR_MOTOR_BWD_SPEED);
+    rrMotor.setForwardSpeed(255);
+    rrMotor.setBackwardSpeed(255);
 }
 
 void resetSettings()
@@ -168,9 +156,9 @@ void handleCommand(String command)
     {
         resetSettings();
     }
-    else 
+    else
     {
-       stop();
+       stop();       
     }
 }
 
